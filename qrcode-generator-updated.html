@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Generator with Custom Logo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            background-color: #f0f2f5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: #333;
+        }
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #555;
+        }
+        input, select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        .logo-upload {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .logo-preview {
+            width: 60px;
+            height: 60px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        .logo-preview img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+        button {
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #3367d6;
+        }
+        .qr-result {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 2rem;
+        }
+        #qrcode {
+            margin-bottom: 1.5rem;
+            background-color: white;
+            padding: 1rem;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .download-btn {
+            background-color: #34a853;
+            margin-top: 1rem;
+        }
+        .download-btn:hover {
+            background-color: #2e8b57;
+        }
+        .color-options {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .color-group {
+            flex: 1;
+        }
+        .error {
+            color: #d93025;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+        .sample-logo {
+            margin-top: 1rem;
+            text-align: center;
+        }
+        .sample-logo img {
+            width: 100px;
+            height: auto;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        .sample-logo img:hover {
+            border-color: #4285f4;
+        }
+        .logo-options {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 1.5rem;
+        }
+        .logo-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .logo-type-btn {
+            flex: 1;
+            padding: 8px;
+            background-color: #f1f1f1;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+        .logo-type-btn.active {
+            background-color: #4285f4;
+            color: white;
+            border-color: #3367d6;
+        }
+        #default-logo-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+        .default-logo {
+            width: 60px;
+            height: 60px;
+            border: 1px solid #ddd;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+        .default-logo:hover {
+            border-color: #4285f4;
+        }
+        .default-logo img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+        /* Diamond logo */
+        .diamond-logo {
+            width: 40px;
+            height: 40px;
+            position: relative;
+            transform: rotate(45deg);
+            background-color: #c0c0c0;
+            margin: 0 auto;
+        }
+        .diamond-logo .inner {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            right: 5px;
+            bottom: 5px;
+            background-color: #d4af37;
+        }
+        .diamond-logo-text {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transform: rotate(-45deg);
+            font-size: 8px;
+            color: white;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>QR Code Generator with Custom Logo</h1>
+        
+        <div class="input-group">
+            <label for="qr-text">Text or URL</label>
+            <input type="text" id="qr-text" placeholder="Enter text or URL for QR code">
+        </div>
+
+        <div class="color-options">
+            <div class="color-group">
+                <label for="foreground">Foreground Color</label>
+                <input type="color" id="foreground" value="#000000">
+            </div>
+            <div class="color-group">
+                <label for="background">Background Color</label>
+                <input type="color" id="background" value="#FFFFFF">
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label for="error-correction">Error Correction Level</label>
+            <select id="error-correction">
+                <option value="L">Low (7%)</option>
+                <option value="M">Medium (15%)</option>
+                <option value="Q" selected>Quartile (25%)</option>
+                <option value="H">High (30%)</option>
+            </select>
+            <p class="info">Higher correction level makes QR code more reliable with logo</p>
+        </div>
+
+        <div class="input-group">
+            <label for="logo-size">Logo Size (%)</label>
+            <input type="range" id="logo-size" min="5" max="30" value="15">
+        </div>
+
+        <div class="logo-options">
+            <label>Logo Type</label>
+            <div class="logo-buttons">
+                <button class="logo-type-btn active" id="default-logo-btn">Default Logo</button>
+                <button class="logo-type-btn" id="upload-logo-btn">Upload Custom Logo</button>
+            </div>
+        </div>
+
+        <div id="default-logo-container">
+            <div class="default-logo selected-logo" data-logo="diamond">
+                <div class="diamond-logo">
+                    <div class="inner"></div>
+                    <div class="diamond-logo-text">SAMPLE</div>
+                </div>
+            </div>
+            <div class="default-logo" data-logo="diamond-text">
+                <svg width="40" height="40" viewBox="0 0 40 40">
+                    <rect x="4" y="4" width="32" height="32" fill="#000000" transform="rotate(45 20 20)"/>
+                    <rect x="8" y="8" width="24" height="24" fill="#d4af37" transform="rotate(45 20 20)"/>
+                    <text x="20" y="22" text-anchor="middle" fill="white" font-size="6" font-weight="bold" transform="rotate(-45 20 20)">SAMPLE</text>
+                </svg>
+            </div>
+        </div>
+
+        <div class="logo-upload" style="display: none;">
+            <div class="logo-preview">
+                <img id="logo-preview-img" src="" alt="">
+            </div>
+            <div>
+                <input type="file" id="logo-file" accept="image/*">
+                <p class="info">Recommended: transparent PNG</p>
+            </div>
+        </div>
+
+        <button id="generate-btn">Generate QR Code</button>
+        
+        <div class="qr-result">
+            <div id="qrcode"></div>
+            <button id="download-btn" class="download-btn" disabled>Download</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const qrText = document.getElementById('qr-text');
+            const foregroundColor = document.getElementById('foreground');
+            const backgroundColor = document.getElementById('background');
+            const errorCorrection = document.getElementById('error-correction');
+            const logoSize = document.getElementById('logo-size');
+            const logoFile = document.getElementById('logo-file');
+            const logoPreviewImg = document.getElementById('logo-preview-img');
+            const generateBtn = document.getElementById('generate-btn');
+            const qrcodeContainer = document.getElementById('qrcode');
+            const downloadBtn = document.getElementById('download-btn');
+            const defaultLogoBtn = document.getElementById('default-logo-btn');
+            const uploadLogoBtn = document.getElementById('upload-logo-btn');
+            const logoUploadContainer = document.querySelector('.logo-upload');
+            const defaultLogoContainer = document.getElementById('default-logo-container');
+            const defaultLogos = document.querySelectorAll('.default-logo');
+            
+            let logoImage = null;
+            let selectedLogoType = 'default';
+            let selectedDefaultLogo = 'diamond';
+            
+            // Toggle between default and upload logo options
+            defaultLogoBtn.addEventListener('click', function() {
+                defaultLogoBtn.classList.add('active');
+                uploadLogoBtn.classList.remove('active');
+                logoUploadContainer.style.display = 'none';
+                defaultLogoContainer.style.display = 'flex';
+                selectedLogoType = 'default';
+            });
+            
+            uploadLogoBtn.addEventListener('click', function() {
+                uploadLogoBtn.classList.add('active');
+                defaultLogoBtn.classList.remove('active');
+                logoUploadContainer.style.display = 'flex';
+                defaultLogoContainer.style.display = 'none';
+                selectedLogoType = 'upload';
+            });
+            
+            // Select default logo
+            defaultLogos.forEach(logo => {
+                logo.addEventListener('click', function() {
+                    defaultLogos.forEach(l => l.classList.remove('selected-logo'));
+                    this.classList.add('selected-logo');
+                    selectedDefaultLogo = this.getAttribute('data-logo');
+                });
+            });
+            
+            // Preview logo when uploaded
+            logoFile.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        logoPreviewImg.src = e.target.result;
+                        logoImage = new Image();
+                        logoImage.src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            // Generate QR Code
+            generateBtn.addEventListener('click', function() {
+                const text = qrText.value.trim();
+                if (!text) {
+                    alert('Please enter text or URL for the QR code');
+                    return;
+                }
+                
+                // Clear previous QR code
+                qrcodeContainer.innerHTML = '';
+                downloadBtn.disabled = true;
+                
+                // Create QR code
+                const qrcode = new QRCode(qrcodeContainer, {
+                    text: text,
+                    width: 256,
+                    height: 256,
+                    colorDark: foregroundColor.value,
+                    colorLight: backgroundColor.value,
+                    correctLevel: QRCode.CorrectLevel[errorCorrection.value]
+                });
+                
+                // Add logo after QR code is generated
+                setTimeout(() => {
+                    if (selectedLogoType === 'upload' && logoImage) {
+                        addLogoToQRCode(logoImage);
+                    } else if (selectedLogoType === 'default') {
+                        addDefaultLogoToQRCode(selectedDefaultLogo);
+                    }
+                    downloadBtn.disabled = false;
+                }, 100);
+            });
+            
+            // Add uploaded logo to center of QR code
+            function addLogoToQRCode(logoImg) {
+                const canvas = qrcodeContainer.querySelector('canvas');
+                const context = canvas.getContext('2d');
+                
+                // Calculate logo size based on percentage
+                const size = (parseInt(logoSize.value) / 100) * canvas.width;
+                const x = (canvas.width - size) / 2;
+                const y = (canvas.height - size) / 2;
+                
+                // Add logo
+                context.drawImage(logoImg, x, y, size, size);
+            }
+            
+            // Add default logo to center of QR code
+            function addDefaultLogoToQRCode(logoType) {
+                const canvas = qrcodeContainer.querySelector('canvas');
+                const context = canvas.getContext('2d');
+                
+                // Calculate logo size based on percentage
+                const size = (parseInt(logoSize.value) / 100) * canvas.width;
+                const x = (canvas.width - size) / 2;
+                const y = (canvas.height - size) / 2;
+                
+                if (logoType === 'diamond') {
+                    // Clear a small area in the center
+                    context.fillStyle = backgroundColor.value;
+                    context.fillRect(x, y, size, size);
+                    
+                    // Diamond shape (rotated square)
+                    context.save();
+                    context.translate(canvas.width/2, canvas.height/2);
+                    context.rotate(Math.PI / 4); // 45 degrees
+                    
+                    // Outer diamond
+                    context.fillStyle = '#c0c0c0';
+                    const diamondSize = size * 0.7;
+                    context.fillRect(-diamondSize/2, -diamondSize/2, diamondSize, diamondSize);
+                    
+                    // Inner diamond
+                    context.fillStyle = '#d4af37'; // Gold color
+                    const innerSize = diamondSize * 0.8;
+                    context.fillRect(-innerSize/2, -innerSize/2, innerSize, innerSize);
+                    
+                    // Text
+                    context.rotate(-Math.PI / 4); // Reset rotation for text
+                    context.fillStyle = '#FFFFFF';
+                    context.font = `${size * 0.2}px Arial`;
+                    context.textAlign = 'center';
+                    context.textBaseline = 'middle';
+                    context.fillText('SAMPLE', 0, 0);
+                    
+                    context.restore();
+                } else if (logoType === 'diamond-text') {
+                    // Clear a small area in the center
+                    context.fillStyle = backgroundColor.value;
+                    context.fillRect(x, y, size, size);
+                    
+                    // Create a diamond shape
+                    context.save();
+                    context.translate(canvas.width/2, canvas.height/2);
+                    context.rotate(Math.PI / 4); // 45 degrees
+                    
+                    // Outer diamond (black)
+                    context.fillStyle = '#000000';
+                    const diamondSize = size * 0.7;
+                    context.fillRect(-diamondSize/2, -diamondSize/2, diamondSize, diamondSize);
+                    
+                    // Inner diamond (gold)
+                    context.fillStyle = '#d4af37';
+                    const innerSize = diamondSize * 0.8;
+                    context.fillRect(-innerSize/2, -innerSize/2, innerSize, innerSize);
+                    
+                    // Text
+                    context.rotate(-Math.PI / 4); // Reset rotation for text
+                    context.fillStyle = '#FFFFFF';
+                    context.font = `bold ${size * 0.2}px Arial`;
+                    context.textAlign = 'center';
+                    context.textBaseline = 'middle';
+                    context.fillText('SAMPLE', 0, 0);
+                    
+                    context.restore();
+                }
+            }
+            
+            // Download QR code
+            downloadBtn.addEventListener('click', function() {
+                const canvas = qrcodeContainer.querySelector('canvas');
+                if (canvas) {
+                    const dataURL = canvas.toDataURL('image/png');
+                    const link = document.createElement('a');
+                    link.download = 'qrcode-with-logo.png';
+                    link.href = dataURL;
+                    link.click();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
