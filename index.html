@@ -469,7 +469,34 @@
             downloadBtn.addEventListener('click', function() {
                 const canvas = qrcodeContainer.querySelector('canvas');
                 if (canvas) {
-                    const dataURL = canvas.toDataURL('image/png');
+                    const padding = 20; // padding di sekeliling QR code
+                    const borderWidth = 2; // ketebalan border
+                    const borderColor = '#000000';
+
+                    // Buat canvas baru dengan background putih + padding + border
+                    const exportCanvas = document.createElement('canvas');
+                    exportCanvas.width = canvas.width + (padding * 2);
+                    exportCanvas.height = canvas.height + (padding * 2);
+                    const exportContext = exportCanvas.getContext('2d');
+
+                    // Isi background putih penuh
+                    exportContext.fillStyle = '#FFFFFF';
+                    exportContext.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+
+                    // Gambar QR code di tengah dengan padding
+                    exportContext.drawImage(canvas, padding, padding);
+
+                    // Gambar border di sekeliling
+                    exportContext.strokeStyle = borderColor;
+                    exportContext.lineWidth = borderWidth;
+                    exportContext.strokeRect(
+                        borderWidth / 2,
+                        borderWidth / 2,
+                        exportCanvas.width - borderWidth,
+                        exportCanvas.height - borderWidth
+                    );
+
+                    const dataURL = exportCanvas.toDataURL('image/png');
                     const link = document.createElement('a');
                     link.download = 'qrcode-with-logo.png';
                     link.href = dataURL;
